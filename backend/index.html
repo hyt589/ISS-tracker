@@ -44,7 +44,6 @@
         fetch(requestUrl)
         .then(response => response.json())
         .then(data => {
-            console.log("here");
             var timeList = data.response;
             var innerHtml = "";
             timeList.forEach(element => {
