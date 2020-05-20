@@ -1,0 +1,37 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISS Tracker</title>
+</head>
+<body>
+    Hello!
+    <form action="" method="get">
+        <input id="input-long" type="text" placeholder="Longitude"> <br>
+        <input id="input-lat" type="text" placeholder="Latitude"> <br>
+         <br>
+        
+    </form>
+    <div id="pos">
+        <button onclick="getLocation()">My location</button>
+    </div>
+</body>
+
+<script>
+    var x = document.getElementById("pos");
+    var long = document.getElementById("input-long");
+    var lat = document.getElementById("input-lat");
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            x.innerHTML = "Geolocation is not supported by this browser.";
+        }
+    }
+
+    function showPosition(position) {
+        long.value = position.coords.longitude;
+        lat.value = position.coords.latitude;
+    }
+</script>
+</html>
