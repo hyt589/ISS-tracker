@@ -2,14 +2,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyBuvQdKTiYFjPNo7Br-edrKhQTLcHDLRb4"></script>
     <title>ISS Tracker</title>
   </head>
   <body>
-    Hello!
-    <form action="" method="get">
-      <input id="input-long" type="text" placeholder="Longitude" /> <br />
-      <input id="input-lat" type="text" placeholder="Latitude" /> <br />
-    </form>
+    <input type="text" id="city" placeholder="cleveland" />
+    <button id="search-city" onclick="searchCity()">Get Pos</button> <br />
+    <input id="input-long" type="text" placeholder="Longitude" /> <br />
+    <input id="input-lat" type="text" placeholder="Latitude" /> <br />
     <button id="get-button" onclick="getTime()">Get Overhead Times</button>
     <div id="pos">
       <button onclick="getLocation()">My location</button>
@@ -18,18 +18,18 @@
   </body>
 
   <script>
-    var x = document.getElementById("pos")
     var result = document.getElementById("result")
     var long = document.getElementById("input-long")
     var lat = document.getElementById("input-lat")
     var getBtn = document.getElementById("get-button")
+    var cityName = document.getElementById("city")
     const url = "http://api.open-notify.org/iss-pass.json"
 
     function getLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition)
       } else {
-        x.innerHTML = "Geolocation is not supported by this browser."
+        alert("Geolocation is not supported by this browser.")
       }
     }
 
@@ -40,7 +40,7 @@
 
     function getTime() {
       result.innerHTML = "Waiting..."
-      // using https://cors-anywhere.herokuapp.com to bypass cors protection
+      // using https://cors-anywhere.herokuapp.com as proxy to bypass cors protection
       var requestUrl = `https://cors-anywhere.herokuapp.com/${url}?lat=${lat.value}&lon=${long.value}`
       fetch(requestUrl)
         .then((response) => response.json())
@@ -58,6 +58,23 @@
           result.innerHTML = innerHtml
         })
         .catch((e) => console.error(e))
+    }
+
+    function searchCity() {
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode(
+        {
+          address: cityName.value
+        },
+        function (results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            lat.value = results[0].geometry.location.lat()
+            long.value = results[0].geometry.location.lng()
+          } else {
+            alert("City lookup failed")
+          }
+        }
+      )
     }
   </script>
 </html>
