@@ -109,6 +109,8 @@
 
     var mymap
     var marker
+    var issMarker
+
     setTimeout(() => {
       mymap = L.map("mapid").setView(
         [parseFloat(lat.value), parseFloat(long.value)],
@@ -117,6 +119,20 @@
       marker = L.marker([parseFloat(lat.value), parseFloat(long.value)]).addTo(
         mymap
       )
+
+      var satIcon = L.icon({
+        iconUrl: "http://open-notify.org/Open-Notify-API/map/ISSIcon.png",
+        iconSize: [50, 30],
+        iconAnchor: [25, 15],
+        popupAnchor: [50, 25],
+        shadowUrl: "http://open-notify.org/Open-Notify-API/map/ISSIcon_shadow.png",
+        shadowSize: [60, 40],
+        shadowAnchor: [30, 15],
+      })
+      issMarker = L.marker([0, 0], { icon: satIcon }).addTo(mymap)
+
+      getIssLocation()
+      
       L.tileLayer(
         "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
         {
@@ -139,5 +155,25 @@
       )
       marker.setLatLng([parseFloat(lat.value), parseFloat(long.value)])
     }
+
+    function getIssLocation() {
+      var requestUrl =
+        "https://cors-anywhere.herokuapp.com/http://api.open-notify.org/iss-now.json"
+      fetch(requestUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          var currentLatitude = data.iss_position.latitude
+          var currentLongitude = data.iss_position.longitude
+
+          issMarker.setLatLng([
+            parseFloat(currentLatitude),
+            parseFloat(currentLongitude),
+          ])
+        })
+    }
+
+    setInterval(() => {
+      getIssLocation()
+    }, 10000)
   </script>
 </html>
