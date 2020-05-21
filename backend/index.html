@@ -2,7 +2,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=AIzaSyBuvQdKTiYFjPNo7Br-edrKhQTLcHDLRb4"></script>
+    <script
+      type="text/javascript"
+      src="//maps.googleapis.com/maps/api/js?key=AIzaSyBuvQdKTiYFjPNo7Br-edrKhQTLcHDLRb4"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+      integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+      integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+      crossorigin=""
+    ></script>
     <title>ISS Tracker</title>
   </head>
   <body>
@@ -15,8 +29,15 @@
       <button onclick="getLocation()">My location</button>
     </div>
     <div id="result"></div>
+    <div id="mapid"></div>
   </body>
 
+  <style>
+    #mapid {
+      height: 40%;
+      width: 50%;
+    }
+  </style>
   <script>
     var result = document.getElementById("result")
     var long = document.getElementById("input-long")
@@ -28,6 +49,7 @@
     function getLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition)
+        setTimeout(() => changeMap(), 500)
       } else {
         alert("Geolocation is not supported by this browser.")
       }
@@ -42,6 +64,7 @@
       result.innerHTML = "Waiting..."
       // using https://cors-anywhere.herokuapp.com as proxy to bypass cors protection
       var requestUrl = `https://cors-anywhere.herokuapp.com/${url}?lat=${lat.value}&lon=${long.value}`
+      setTimeout(() => changeMap(), 500)
       fetch(requestUrl)
         .then((response) => response.json())
         .then((data) => {
@@ -61,20 +84,59 @@
     }
 
     function searchCity() {
-      var geocoder = new google.maps.Geocoder();
+      var geocoder = new google.maps.Geocoder()
       geocoder.geocode(
         {
-          address: cityName.value
+          address: cityName.value,
         },
         function (results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
             lat.value = results[0].geometry.location.lat()
             long.value = results[0].geometry.location.lng()
+            setTimeout(() => changeMap(), 500)
           } else {
             alert("City lookup failed")
           }
         }
       )
+    }
+
+    getLocation()
+    setTimeout(() => {
+      getTime()
+    }, 500)
+
+    var mymap
+    var marker
+    setTimeout(() => {
+      mymap = L.map("mapid").setView(
+        [parseFloat(lat.value), parseFloat(long.value)],
+        13
+      )
+      marker = L.marker([parseFloat(lat.value), parseFloat(long.value)]).addTo(
+        mymap
+      )
+      L.tileLayer(
+        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+        {
+          attribution:
+            'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+          maxZoom: 18,
+          id: "mapbox/streets-v11",
+          tileSize: 512,
+          zoomOffset: -1,
+          accessToken:
+            "pk.eyJ1IjoiaHl0MzIiLCJhIjoiY2thZzAzYTRxMDI5aTJ4cG5jcDhwaDh6NCJ9.mPCW_Sg-Zy4pcyfLGERTbA",
+        }
+      ).addTo(mymap)
+    }, 500)
+
+    function changeMap() {
+      mymap.panTo(
+        [parseFloat(lat.value), parseFloat(long.value)],
+        (animate = true)
+      )
+      marker.setLatLng([parseFloat(lat.value), parseFloat(long.value)])
     }
   </script>
 </html>
